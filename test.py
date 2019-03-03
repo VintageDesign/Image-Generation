@@ -6,7 +6,7 @@ from evolve.shapes import Circle
 
 
 def main():
-    c = Circle((100, 200), 50, 3, 1)
+    c = Circle((100, 200), 50, 3)
     # Use an existing image with lots of circles in it to test with.
     coins = data.coins()
 

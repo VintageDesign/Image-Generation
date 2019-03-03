@@ -8,7 +8,7 @@ from evolve.shapes import Shape
 class Circle(Shape):
     """A grayscale circle."""
 
-    def __init__(self, center, radius, color, alpha):
+    def __init__(self, center, radius, color):
         """Initialize the circle.
 
         :param center: The center of the circle.
@@ -17,8 +17,6 @@ class Circle(Shape):
         :type radius: float
         :param color: The color of the circle.
         :type color: uint8_t
-        :param alpha: The circle transparency
-        :type alpha: float from 0 to 1
         """
         super().__init__()
 
@@ -31,7 +29,6 @@ class Circle(Shape):
         # considered a part of the "position".
         self.position = (center, radius)
         self.color = color
-        self.alpha = alpha
 
     def mutate(self) -> "Circle":
         """Get a mutated copy of this circle."""
@@ -60,4 +57,4 @@ class Circle(Shape):
     def __repr__(self):
         """Official string representation of a Circle."""
         c, r = self.position
-        return f"Circle(center={c}, radius={r}, color={self.color}, alpha={self.alpha})"
+        return f"Circle(center={c}, radius={r}, color={self.color})"

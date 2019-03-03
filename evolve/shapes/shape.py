@@ -9,7 +9,6 @@ class Shape(ABC):
         """Initialize a shape."""
         self.__color = None
         self.__position = None
-        self.__alpha = None
 
     @property
     def color(self):
@@ -24,18 +23,6 @@ class Shape(ABC):
         elif value < 0 or value > 255:
             raise ValueError("The color must be between 0 and 255.")
         self.__color = value
-
-    @property
-    def alpha(self):
-        """Get the alpha for this shape."""
-        return self.__alpha
-
-    @alpha.setter
-    def alpha(self, value):
-        """Set the alpha for this shape."""
-        if value < 0 or value > 1:
-            raise ValueError("The transparency must be between 0 and 1.")
-        self.__alpha = value
 
     @property
     def position(self):
