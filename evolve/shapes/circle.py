@@ -1,5 +1,7 @@
 from collections.abc import Iterable
 
+import numpy as np
+
 from evolve.shapes import Shape
 
 
@@ -40,9 +42,20 @@ class Circle(Shape):
         # Hmmmm, kinky...
         raise NotImplementedError("Recombination has not been implemented yet.")
 
-    def add_to_image(self, image):
+    def add_to_image(self, image: np.ndarray):
         """Add this circle to the given image."""
-        raise NotImplementedError("Adding a circle to an image has not been implemented yet.")
+        # Get the circle center and radius
+        a, b = self.position[0]
+        r = self.position[1]
+
+        # Produce a mask the same size as the image.
+        height, width = image.shape
+        y, x = np.ogrid[-a : height - a, -b : width - b]
+        # Draw a circle in the mask.
+        mask = x ** 2 + y ** 2 <= r ** 2
+
+        # Average the circle color with the existing image.
+        image[mask] = (image[mask] + self.color) / 2
 
     def __repr__(self):
         """Official string representation of a Circle."""
