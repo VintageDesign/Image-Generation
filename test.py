@@ -3,17 +3,16 @@ import matplotlib.pyplot as plt
 from skimage import data
 
 from evolve.shapes import Circle
+from evolve import Individual
 
 
 def main():
-    c = Circle((100, 200), 50, 3)
     # Use an existing image with lots of circles in it to test with.
     coins = data.coins()
 
-    # Arrays are passed by reference and modifiable.
-    c.add_to_image(coins)
+    x = Individual(10, Circle, coins.shape)
 
-    plt.imshow(coins, cmap='gray', interpolation='nearest')
+    plt.imshow(x.image, cmap="gray", interpolation="nearest")
     plt.show()
 
 
