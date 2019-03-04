@@ -8,25 +8,36 @@ from evolve.shapes import Shape
 class Circle(Shape):
     """A grayscale circle."""
 
-    def __init__(self, center, radius, color):
+    def __init__(self, size, center=None, radius=None, color=None):
         """Initialize the circle.
 
-        :param center: The center of the circle.
-        :type center: a 2-tuple
-        :param radius: The radius of the circle.
-        :type radius: float
-        :param color: The color of the circle.
-        :type color: uint8_t
+        :param size: The dimensions of the approximated image.
+        :type size: A 2-tuple of ints
+        :param center: The center of the circle. If None, the center is randomly generated.
+        :param center: A 2-tuple of ints, optional
+        :param radius: The radius of the circle. If None, the radius is randomly generated.
+        :param radius: int, optional
+        :param color: The color of the circle. If None, the color is randomly generated.
+        :param color: An integer from 0 to 255, optional
         """
-        super().__init__()
+        super().__init__(size)
 
-        if not isinstance(center, Iterable):
+        if center is not None and not isinstance(center, Iterable):
             raise ValueError("The center must be an iterable.")
-        elif len(center) != 2:
+        if center is not None and len(center) != 2:
             raise ValueError("The center must be an iterable of length 2.")
-        # TODO: This may not be the right choice. If we end up implementing evolution with triangles
-        # this would be a list of the vertices, but for a circle I don't think the size should be
-        # considered a part of the "position".
+
+        width, height = size
+
+        if radius is None:
+            radius = np.random.randint(2, max(width, height) / 2)
+        if center is None:
+            w = np.random.randint(0, width + 1)
+            h = np.random.randint(0, height + 1)
+            center = (w, h)
+        if color is None:
+            color = np.random.randint(0, 256)
+
         self.position = (center, radius)
         self.color = color
 

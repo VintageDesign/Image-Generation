@@ -5,10 +5,37 @@ from collections.abc import Iterable
 class Shape(ABC):
     """An abstract shape class to build images out of."""
 
-    def __init__(self):
-        """Initialize a shape."""
+    def __init__(self, size):
+        """Initialize a shape.
+
+        :param size: The dimensions of the approximated image.
+        :type size: A 2-tuple of ints
+        """
+        self.size = size
         self.__color = None
         self.__position = None
+
+    @property
+    def size(self):
+        """Get the image size for this shape."""
+        return self.__size
+
+    @size.setter
+    def size(self, value):
+        """Set the image size for this shape."""
+        if not isinstance(value, Iterable):
+            raise ValueError("The image size must be an iterable.")
+        if len(value) != 2:
+            raise ValueError("The image size must be a 2-tuple.")
+
+        width, height = value
+
+        if not isinstance(width, int) or not isinstance(height, int):
+            raise ValueError("Image dimensions must be integers.")
+        if width < 0 or height < 0:
+            raise ValueError("Cannot have negative image dimensions.")
+        # pylint: disable=W0201
+        self.__size = value
 
     @property
     def color(self):
