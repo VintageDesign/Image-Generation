@@ -30,15 +30,6 @@ class Circle(Shape):
         self.position = (center, radius)
         self.color = color
 
-    def mutate(self) -> "Circle":
-        """Get a mutated copy of this circle."""
-        raise NotImplementedError("Mutation has not been implemented yet.")
-
-    def recombine(self, other: "Circle") -> "Circle":
-        """Recombine two circles."""
-        # Hmmmm, kinky...
-        raise NotImplementedError("Recombination has not been implemented yet.")
-
     def add_to_image(self, image: np.ndarray):
         """Add this circle to the given image."""
         # Get the circle center and radius

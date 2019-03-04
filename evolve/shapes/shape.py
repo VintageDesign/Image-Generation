@@ -38,24 +38,8 @@ class Shape(ABC):
         self.__position = value
 
     @abstractmethod
-    def mutate(self) -> "Shape":
-        """Get a mutated copy of this shape."""
-
-    @abstractmethod
-    def recombine(self, other: "Shape") -> "Shape":
-        """Recombine two shapes."""
-
-    @abstractmethod
     def add_to_image(self, image):
         """Add this shape to the given image."""
-
-    def __add__(self, other: "Shape") -> "Shape":
-        """Recombine two shapes."""
-        return self.recombine(other)
-
-    def __invert__(self) -> "Shape":
-        """Get a mutated copy of this shape."""
-        return self.mutate()
 
     @abstractmethod
     def __repr__(self):
