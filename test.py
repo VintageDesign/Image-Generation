@@ -1,18 +1,24 @@
 #!/usr/bin/env python3
 import matplotlib.pyplot as plt
-from skimage import data
+import numpy as np
 
 from evolve.shapes import Circle
-from evolve import Individual
 
 
 def main():
-    # Use an existing image with lots of circles in it to test with.
-    coins = data.coins()
+    image = np.ones((100, 100)) * 255
 
-    x = Individual(10, Circle, coins.shape)
+    c = Circle(image.shape)
 
-    plt.imshow(x.image, cmap="gray", interpolation="nearest")
+    plt.ion()
+    for _ in range(20):
+        image = np.ones((100, 100)) * 255
+        c.perturb()
+        c.add_to_image(image)
+
+        plt.imshow(image, cmap="gray", interpolation="nearest", vmin=0, vmax=255)
+        plt.pause(0.01)
+
     plt.show()
 
 

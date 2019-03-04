@@ -12,7 +12,7 @@ class Shape(ABC):
         :type size: A 2-tuple of ints
         """
         self.size = size
-        self.__color = None
+        self.__color = 0
         self.__position = None
 
     @property
@@ -47,9 +47,8 @@ class Shape(ABC):
         """Set the color for this shape."""
         if not isinstance(value, int):
             raise ValueError("The color must be an integer.")
-        elif value < 0 or value > 255:
-            raise ValueError("The color must be between 0 and 255.")
-        self.__color = value
+        if 0 < value <= 255:
+            self.__color = value
 
     @property
     def position(self):
@@ -67,6 +66,10 @@ class Shape(ABC):
     @abstractmethod
     def add_to_image(self, image):
         """Add this shape to the given image."""
+
+    @abstractmethod
+    def perturb(self):
+        """Perturb this shapes position and color."""
 
     @abstractmethod
     def __repr__(self):
