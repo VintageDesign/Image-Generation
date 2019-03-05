@@ -1,2 +1,2 @@
 from .shape import Shape
-from .circle import Circle
+from .circle import Circle, NumpyCircleArray
