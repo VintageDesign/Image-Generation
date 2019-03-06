@@ -52,24 +52,28 @@ class NumpyCircleArray:
         """Add the given circle to the given image."""
         # TODO: For some stupid reason, swapping x and y below has no effect,
         # but swapping a and b does... Figure out why.
-        b, a = int(circle["center"]["x"]), int(circle["center"]["y"])
+        a, b = int(circle["center"]["x"]), int(circle["center"]["y"])
         # Produce a circular mask and set its value.
-        x, y = np.ogrid[-a : self.width - a, -b : self.height - b]
-        mask = x ** 2 + y ** 2 <= circle["radius"] ** 2
+        x, y = np.ogrid[-b : self.height - b, -a : self.width - a]
+        mask = x ** 2 + y ** 2 <= int(circle["radius"]) ** 2
 
         # Average the existing color and the new circle's color
-        image[mask] = (image[mask] + circle["color"]) / 2
+        image[mask] = (image[mask] + int(circle["color"])) / 2
 
     def update_image(self):
         """Add the given circles to the given image."""
-        self.image.fill(255)
+        self.image.fill(self.image.mean())
         for circle in self.circles:
             self.add_circle(self.image, circle)
 
-    def mutate(self):
+    def mutate(self) -> "NumpyCircleArray":
         """Mutate the collection of circles."""
-        for circle in self.circles:
-            self.mutate_circle(circle)
+        mutation = NumpyCircleArray(self.number, (self.height, self.width))
+        np.copyto(mutation.circles, self.circles, casting="no")
+        for circle in mutation.circles:
+            mutation.mutate_circle(circle)
+
+        return mutation
 
     def mutate_circle(self, circle):
         """Mutate the given circle."""
@@ -80,7 +84,7 @@ class NumpyCircleArray:
     def mutate_center(self, circle):
         """Mutate the given circle's center."""
         # TODO: Tweak the scale.
-        dx, dy = np.random.normal(scale=5, size=2)
+        dx, dy = np.random.normal(scale=3, size=2)
         circle["center"]["x"] = (circle["center"]["x"] + dx) % self.width
         circle["center"]["y"] = (circle["center"]["y"] + dy) % self.width
 
@@ -100,7 +104,7 @@ class NumpyCircleArray:
     def mutate_color(circle):
         """Mutate the given circle's color."""
         # TODO: Tweak the scale.
-        dc = np.random.normal(scale=10)
+        dc = np.random.normal(scale=5)
         if dc < 0 and abs(dc) > circle["color"]:
             dc = -dc
 

@@ -18,4 +18,4 @@ def fitness(image1, image2):
     assert image1.shape == image2.shape
     height, width = image1.shape
     # TODO: Is the normalization by the area necessary?
-    return np.sum((image1 - image2) ** 2) / (height * width)
+    return np.sum((image1 - image2) ** 2)

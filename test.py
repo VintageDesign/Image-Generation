@@ -1,18 +1,19 @@
 #!/usr/bin/env python3
 import matplotlib.pyplot as plt
+from skimage.data import coins
 
-from evolve.shapes import NumpyCircleArray
+from evolve import simulated_annealing
 
 
 def main():
-    circles = NumpyCircleArray(2, (100, 100), True)
-    plt.ion()
-    for _ in range(20):
-        circles.mutate()
-        circles.update_image()
-        plt.imshow(circles.image, cmap="gray", interpolation="nearest", vmin=0, vmax=255)
-        plt.pause(0.05)
+    image = coins()
 
+    # TODO: We may need to explore algorithms other than SA :(
+    approximation = simulated_annealing(image, circles=20)
+
+    plt.title("Final Approximated Image")
+    plt.axis("off")
+    plt.imshow(approximation.image, cmap="gray", vmin=0, vmax=255)
     plt.show()
 
 
