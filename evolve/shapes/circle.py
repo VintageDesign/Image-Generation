@@ -62,7 +62,8 @@ class NumpyCircleArray:
 
     def update_image(self):
         """Add the given circles to the given image."""
-        self.image.fill(self.image.mean())
+        # TODO: Circles should be placed on a blank background, but should it be black or white?
+        self.image.fill(255)
         for circle in self.circles:
             self.add_circle(self.image, circle)
 
