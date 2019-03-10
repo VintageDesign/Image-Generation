@@ -18,9 +18,13 @@ def main():
     approximation = np.zeros(image.shape, dtype="uint8")
     ea.compute_image(approximation, solution, fill_color=image.mean())
 
-    plt.title("Final Approximated Image")
-    plt.axis("off")
-    plt.imshow(approximation, cmap="gray", vmin=0, vmax=255)
+    fig, axes = plt.subplots(1, 2)
+    axes[0].set_title("Best Approximation")
+    axes[0].imshow(approximation, cmap="gray", vmin=0, vmax=255)
+    axes[0].axis("off")
+    axes[1].set_title("Target Image")
+    axes[1].imshow(image, cmap="gray", vmin=0, vmax=255)
+    axes[1].axis("off")
     plt.show()
 
 
