@@ -87,7 +87,7 @@ class NumpyCircleArray:
         # TODO: Tweak the scale.
         dx, dy = np.random.normal(scale=3, size=2)
         circle["center"]["x"] = (circle["center"]["x"] + dx) % self.width
-        circle["center"]["y"] = (circle["center"]["y"] + dy) % self.width
+        circle["center"]["y"] = (circle["center"]["y"] + dy) % self.height
 
     @staticmethod
     def mutate_radius(circle):
