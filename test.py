@@ -2,18 +2,19 @@
 import imageio
 import matplotlib.pyplot as plt
 
-from evolve import simulated_annealing
+from evolve import EvolutionaryAlgorithm
 
 
 def main():
     image = imageio.imread("images/test.png")
 
-    # TODO: We may need to explore algorithms other than SA :(
-    approximation = simulated_annealing(image, circles=20)
+    ea = EvolutionaryAlgorithm(image.shape, 5, 20)
+
+    EvolutionaryAlgorithm.compute_image(ea.image, ea.population[0])
 
     plt.title("Final Approximated Image")
     plt.axis("off")
-    plt.imshow(approximation.image, cmap="gray", vmin=0, vmax=255)
+    plt.imshow(ea.image, cmap="gray", vmin=0, vmax=255)
     plt.show()
 
 
