@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
+import imageio
 import matplotlib.pyplot as plt
-from skimage.data import coins
 
 from evolve import simulated_annealing
 
 
 def main():
-    image = coins()
+    image = imageio.imread("images/test.png")
 
     # TODO: We may need to explore algorithms other than SA :(
     approximation = simulated_annealing(image, circles=20)
