@@ -31,7 +31,7 @@ class EvolutionaryAlgorithm:
 
         # TODO: If we ever attempt to perform parallel computation, each process will need its own
         # image represented by a single individual.
-        self.approx = np.zeros(image.shape, dtype="uint8")
+        self.approx = np.zeros(image.shape, dtype="int16")
 
     def init_pop(self):
         """Randomly initialize the population."""
@@ -129,12 +129,16 @@ class EvolutionaryAlgorithm:
         circle["center"]["x"] = (circle["center"]["x"] + dx) % self.width
         circle["center"]["y"] = (circle["center"]["y"] + dy) % self.height
 
-    def mutate_individual(self, individual, scale = 2):
+    def mutate_individual(self, individual, scale = 3):
         """Mutate the given individual in place."""
         for circle in individual:
-            self.perturb_radius(circle, scale)
-            self.perturb_color(circle, scale)
-            self.perturb_center(circle, scale)
+            choice = np.random.randint(0,3)
+            if choice == 0:
+                self.perturb_radius(circle, scale)
+            elif choice == 1:
+                self.perturb_color(circle, scale)
+            elif choice == 2:
+                self.perturb_center(circle, scale)
 
     def mutate(self):
         """Mutate each individual in the population."""
@@ -170,8 +174,8 @@ class EvolutionaryAlgorithm:
         joint = joint[indices]
         fit = fit[indices]
 
-        self.population = joint[self.pop_size:]
-        self.fitnesses = fit[self.pop_size:]
+        self.population = joint[:self.pop_size]
+        self.fitnesses = fit[:self.pop_size]
 
 
     # TODO: Display the current best individual as the EA progresses.
@@ -200,7 +204,7 @@ class EvolutionaryAlgorithm:
             self.select()
 
 
-            best = np.argmax(self.fitnesses)
+            best = np.argmin(self.fitnesses)
             if verbose:
                 print("best fitness:", self.fitnesses[best])
             fitnesses[gen] = self.fitnesses[best]

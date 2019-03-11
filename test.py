@@ -31,18 +31,21 @@ def main(args):
     fitnesses, individuals = ea.run(generations=args.generations, verbose=not args.quiet)
 
     if not args.quiet:
-        solution = individuals[np.argmax(fitnesses)]
+        solution = individuals[np.argmin(fitnesses)]
 
         approximation = np.zeros(image.shape, dtype="uint8")
-        ea.compute_image(approximation, solution, fill_color=image.mean())
+        ea.compute_image(approximation, solution, 255)
 
-        _, axes = plt.subplots(1, 2)
+        _, axes = plt.subplots(1, 3)
         axes[0].set_title("Best Approximation")
         axes[0].imshow(approximation, cmap="gray", vmin=0, vmax=255)
         axes[0].axis("off")
         axes[1].set_title("Target Image")
         axes[1].imshow(image, cmap="gray", vmin=0, vmax=255)
         axes[1].axis("off")
+        axes[2].set_title("Diff")
+        axes[2].imshow(image - approximation, cmap="gray", vmin=0, vmax=255)
+        axes[2].axis("off")
         plt.show()
 
 
