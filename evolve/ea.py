@@ -21,10 +21,13 @@ class EvolutionaryAlgorithm:
         self.ind_size = ind_size
 
         self.population = np.zeros((pop_size, ind_size), dtype=NumpyCircleArray.CircleDtype)
-        self.fitnesses = np.zeros(pop_size)
+        self.fitnesses = np.zeros(len(self.population))
 
         self.mutations = np.zeros_like(self.population)
-        self.children = None
+        self.mutation_fitnesses = np.zeros(len(self.mutations))
+
+        self.children = []
+        self.children_fitnesses = np.zeros(len(self.children))
 
         # TODO: If we ever attempt to perform parallel computation, each process will need its own
         # image represented by a single individual.
@@ -78,14 +81,30 @@ class EvolutionaryAlgorithm:
             mask = x ** 2 + y ** 2 <= r ** 2
             image[mask] = (image[mask] + circle["color"]) / 2
 
-    def evaluate(self):
-        """Update the population fitnesses."""
+    def update_fitnesses(self, population, fitnesses):
+        """Update the fitnesses for the given population."""
         # TODO: This is a good candidate for parallelism.
-        for i in range(self.pop_size):
-            individual = self.population[i]
+        for i, individual in enumerate(population):
             # TODO: Fill with the mean color of the target image?
             self.compute_image(self.approx, individual, fill_color=self.target.mean())
-            self.fitnesses[i] = fitness(self.approx, self.target)
+            fitnesses[i] = fitness(self.approx, self.target)
+
+    def evaluate(self, population="general"):
+        """Update the population fitnesses.
+
+        :param population: Which population to evaluate. One of 'all', 'general', 'mutations', or
+        'children'.
+        """
+        if population == "general":
+            self.update_fitnesses(self.population, self.fitnesses)
+        elif population == "mutations":
+            self.update_fitnesses(self.mutations, self.mutation_fitnesses)
+        elif population == "children":
+            self.update_fitnesses(self.children, self.children_fitnesses)
+        elif population == "all":
+            self.update_fitnesses(self.population, self.fitnesses)
+            self.update_fitnesses(self.mutations, self.mutation_fitnesses)
+            self.update_fitnesses(self.children, self.children_fitnesses)
 
     def perturb_radius(self, circle, scale=5):
         """Perturb the radius of the given circle."""
@@ -125,31 +144,40 @@ class EvolutionaryAlgorithm:
     def reproduce(self):
         """Reproduce the individuals in the population."""
         # TODO: Should the population be sorted by fitness?
+        # TODO: Should the best be intentionally reproduced with the worst?
         raise NotImplementedError
 
     def select(self):
         """Select the individuals who survive."""
+        # TODO: Roulette or deterministic selection?
         raise NotImplementedError
 
-    def run(self, generations=100):
+    # TODO: Display the current best individual as the EA progresses.
+    def run(self, generations=100, verbose=False):
         """Run the EA.
 
         :param generations: The number of generations to run the EA for
+        :param verbose: Output useful diagnostic information
         :returns: The best individuals over the total runtime of the algorithm.
         :rtype: An array of EvolutionaryAlgorithm.HistoryDtype objects.
         """
         self.init_pop()
-        self.evaluate()
+        self.evaluate(population="general")
 
         fitnesses = np.zeros(generations)
         individuals = np.zeros((generations, self.ind_size), dtype=NumpyCircleArray.CircleDtype)
         for gen in range(generations):
             # self.reproduce()
             self.mutate()
+
+            self.evaluate(population="general")
+            self.evaluate(population="mutations")
+
             # self.select()
 
-            self.evaluate()
             best = np.argmax(self.fitnesses)
+            if verbose:
+                print("best fitness:", self.fitnesses[best])
             fitnesses[gen] = self.fitnesses[best]
             individuals[gen] = self.population[best]
 

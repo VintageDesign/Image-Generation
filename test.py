@@ -11,7 +11,7 @@ def main():
 
     ea = EvolutionaryAlgorithm(image, 5, 20)
 
-    fitnesses, individuals = ea.run(generations=100)
+    fitnesses, individuals = ea.run(generations=100, verbose=True)
 
     solution = individuals[np.argmax(fitnesses)]
 
