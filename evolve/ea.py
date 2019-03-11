@@ -59,6 +59,7 @@ class EvolutionaryAlgorithm:
         circle["center"]["x"] = np.random.randint(0, self.width, dtype="uint16")
         circle["center"]["y"] = np.random.randint(0, self.height, dtype="uint16")
 
+    # TODO: 99% Of the EA runtime is spent in this function. Make it better.
     @staticmethod
     def compute_image(image, individual, fill_color=0):
         """Compute the image represented by the given individual.
@@ -149,7 +150,7 @@ class EvolutionaryAlgorithm:
 
     def select(self):
         """Select the individuals who survive."""
-        # TODO: Roulette or deterministic selection?
+        # TODO: I think deterministic selection would improve the results?
         joint = np.concatenate((self.population, self.mutations))
         fit = np.concatenate((self.fitnesses, self.mutation_fitnesses))
         probs = fit / np.sum(fit)
