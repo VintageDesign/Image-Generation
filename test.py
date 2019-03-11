@@ -18,6 +18,7 @@ def parse_args():
     parser.add_argument(
         "--generations", "-g", type=int, default=100, help="The number of generations."
     )
+    # TODO: Save the result to an output file.
 
     return parser.parse_args()
 
