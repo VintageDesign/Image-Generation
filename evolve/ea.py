@@ -150,7 +150,12 @@ class EvolutionaryAlgorithm:
     def select(self):
         """Select the individuals who survive."""
         # TODO: Roulette or deterministic selection?
-        raise NotImplementedError
+        joint = np.concatenate((self.population, self.mutations))
+        fit = np.concatenate((self.fitnesses, self.mutation_fitnesses))
+        probs = fit / np.sum(fit)
+
+        indices = np.random.choice(self.pop_size*2, size=self.pop_size, replace=False, p=probs)
+        self.population = joint[indices]
 
     # TODO: Display the current best individual as the EA progresses.
     def run(self, generations=100, verbose=False):
@@ -173,7 +178,7 @@ class EvolutionaryAlgorithm:
             self.evaluate(population="general")
             self.evaluate(population="mutations")
 
-            # self.select()
+            self.select()
 
             best = np.argmax(self.fitnesses)
             if verbose:
