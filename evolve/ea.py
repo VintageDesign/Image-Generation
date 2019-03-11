@@ -55,13 +55,13 @@ class EvolutionaryAlgorithm:
         """
         circle["color"] = np.random.randint(0, 256, dtype="uint8")
         # TODO: What should the bounds on the circle radii be?
-        circle["radius"] = np.random.randint(5, max(self.height, self.width), dtype="uint16")
+        circle["radius"] = np.random.randint(5, max(self.height/4, self.width/4), dtype="uint16")
         circle["center"]["x"] = np.random.randint(0, self.width, dtype="uint16")
         circle["center"]["y"] = np.random.randint(0, self.height, dtype="uint16")
 
     # TODO: 99% Of the EA runtime is spent in this function. Make it better.
     @staticmethod
-    def compute_image(image, individual, fill_color=0):
+    def compute_image(image, individual, fill_color=255):
         """Compute the image represented by the given individual.
 
         :param image: The preallocated image to fill
@@ -87,7 +87,7 @@ class EvolutionaryAlgorithm:
         # TODO: This is a good candidate for parallelism.
         for i, individual in enumerate(population):
             # TODO: Fill with the mean color of the target image?
-            self.compute_image(self.approx, individual, fill_color=self.target.mean())
+            self.compute_image(self.approx, individual)
             fitnesses[i] = fitness(self.approx, self.target)
 
     def evaluate(self, population="general"):
@@ -129,12 +129,12 @@ class EvolutionaryAlgorithm:
         circle["center"]["x"] = (circle["center"]["x"] + dx) % self.width
         circle["center"]["y"] = (circle["center"]["y"] + dy) % self.height
 
-    def mutate_individual(self, individual):
+    def mutate_individual(self, individual, scale = 2):
         """Mutate the given individual in place."""
         for circle in individual:
-            self.perturb_radius(circle)
-            self.perturb_color(circle)
-            self.perturb_center(circle)
+            self.perturb_radius(circle, scale)
+            self.perturb_color(circle, scale)
+            self.perturb_center(circle, scale)
 
     def mutate(self):
         """Mutate each individual in the population."""
@@ -149,7 +149,8 @@ class EvolutionaryAlgorithm:
         raise NotImplementedError
 
     def select(self):
-        """Select the individuals who survive."""
+        """Select the top 50% of the population based on fitness"""
+        '''
         # TODO: I think deterministic selection would improve the results?
         joint = np.concatenate((self.population, self.mutations))
         fit = np.concatenate((self.fitnesses, self.mutation_fitnesses))
@@ -157,6 +158,21 @@ class EvolutionaryAlgorithm:
 
         indices = np.random.choice(self.pop_size*2, size=self.pop_size, replace=False, p=probs)
         self.population = joint[indices]
+        '''
+
+        self.sort()
+
+    def sort(self):
+        joint = np.concatenate((self.population, self.mutations))
+        fit = np.concatenate((self.fitnesses, self.mutation_fitnesses))
+
+        indices = np.argsort(fit)
+        joint = joint[indices]
+        fit = fit[indices]
+
+        self.population = joint[self.pop_size:]
+        self.fitnesses = fit[self.pop_size:]
+
 
     # TODO: Display the current best individual as the EA progresses.
     def run(self, generations=100, verbose=False):
@@ -174,14 +190,15 @@ class EvolutionaryAlgorithm:
         individuals = np.zeros((generations, self.ind_size), dtype=NumpyCircleArray.CircleDtype)
         for gen in range(generations):
             # self.reproduce()
-            self.mutate()
 
+            self.mutate()
             # TODO: This is 95+% of the runtime of the run() function call.
             # And compute_image is 95+% of this call.
             self.evaluate(population="general")
             self.evaluate(population="mutations")
 
             self.select()
+
 
             best = np.argmax(self.fitnesses)
             if verbose:
