@@ -175,6 +175,7 @@ class EvolutionaryAlgorithm:
             # self.reproduce()
             self.mutate()
 
+            # TODO: This is 95+% of the runtime of the run() function call.
             self.evaluate(population="general")
             self.evaluate(population="mutations")
 
