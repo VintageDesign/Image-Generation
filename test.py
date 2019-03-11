@@ -9,7 +9,7 @@ from evolve import EvolutionaryAlgorithm
 def main():
     image = imageio.imread("images/test.png")
 
-    ea = EvolutionaryAlgorithm(image, 5, 20)
+    ea = EvolutionaryAlgorithm(image, pop_size=5, ind_size=20)
 
     fitnesses, individuals = ea.run(generations=100, verbose=True)
 
