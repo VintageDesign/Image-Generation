@@ -55,7 +55,7 @@ class EvolutionaryAlgorithm:
         """
         circle["color"] = np.random.randint(0, 256, dtype="uint8")
         # TODO: What should the bounds on the circle radii be?
-        circle["radius"] = np.random.randint(5, max(self.height/4, self.width/4), dtype="uint16")
+        circle["radius"] = np.random.randint(5, max(self.height, self.width), dtype="uint16")
         circle["center"]["x"] = np.random.randint(0, self.width, dtype="uint16")
         circle["center"]["y"] = np.random.randint(0, self.height, dtype="uint16")
 
@@ -129,10 +129,10 @@ class EvolutionaryAlgorithm:
         circle["center"]["x"] = (circle["center"]["x"] + dx) % self.width
         circle["center"]["y"] = (circle["center"]["y"] + dy) % self.height
 
-    def mutate_individual(self, individual, scale = 3):
+    def mutate_individual(self, individual, scale=3):
         """Mutate the given individual in place."""
         for circle in individual:
-            choice = np.random.randint(0,3)
+            choice = np.random.randint(0, 3)
             if choice == 0:
                 self.perturb_radius(circle, scale)
             elif choice == 1:
@@ -153,20 +153,7 @@ class EvolutionaryAlgorithm:
         raise NotImplementedError
 
     def select(self):
-        """Select the top 50% of the population based on fitness"""
-        '''
-        # TODO: I think deterministic selection would improve the results?
-        joint = np.concatenate((self.population, self.mutations))
-        fit = np.concatenate((self.fitnesses, self.mutation_fitnesses))
-        probs = fit / np.sum(fit)
-
-        indices = np.random.choice(self.pop_size*2, size=self.pop_size, replace=False, p=probs)
-        self.population = joint[indices]
-        '''
-
-        self.sort()
-
-    def sort(self):
+        """Select the top 50% of the population based on fitness."""
         joint = np.concatenate((self.population, self.mutations))
         fit = np.concatenate((self.fitnesses, self.mutation_fitnesses))
 
@@ -174,9 +161,8 @@ class EvolutionaryAlgorithm:
         joint = joint[indices]
         fit = fit[indices]
 
-        self.population = joint[:self.pop_size]
-        self.fitnesses = fit[:self.pop_size]
-
+        self.population = joint[: self.pop_size]
+        self.fitnesses = fit[: self.pop_size]
 
     # TODO: Display the current best individual as the EA progresses.
     def run(self, generations=100, verbose=False):
@@ -202,7 +188,6 @@ class EvolutionaryAlgorithm:
             self.evaluate(population="mutations")
 
             self.select()
-
 
             best = np.argmin(self.fitnesses)
             if verbose:
