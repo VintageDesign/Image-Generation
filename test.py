@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+import argparse
+
 import imageio
 import matplotlib.pyplot as plt
 import numpy as np
@@ -6,27 +8,42 @@ import numpy as np
 from evolve import EvolutionaryAlgorithm
 
 
-def main():
-    image = imageio.imread("images/test.png")
+def parse_args():
+    parser = argparse.ArgumentParser(description="Approximate the given image using an EA.")
 
-    ea = EvolutionaryAlgorithm(image, pop_size=5, ind_size=20)
+    parser.add_argument("--quiet", action="store_true", default=False, help="Quiet all output.")
+    parser.add_argument("image", help="The image to approximate.")
+    parser.add_argument("--population", "-p", type=int, default=10, help="The population size.")
+    parser.add_argument("--individual", "-i", type=int, default=20, help="The individual size.")
+    parser.add_argument(
+        "--generations", "-g", type=int, default=100, help="The number of generations."
+    )
 
-    fitnesses, individuals = ea.run(generations=100, verbose=True)
+    return parser.parse_args()
 
-    solution = individuals[np.argmax(fitnesses)]
 
-    approximation = np.zeros(image.shape, dtype="uint8")
-    ea.compute_image(approximation, solution, fill_color=image.mean())
+def main(args):
+    image = imageio.imread(args.image)
 
-    fig, axes = plt.subplots(1, 2)
-    axes[0].set_title("Best Approximation")
-    axes[0].imshow(approximation, cmap="gray", vmin=0, vmax=255)
-    axes[0].axis("off")
-    axes[1].set_title("Target Image")
-    axes[1].imshow(image, cmap="gray", vmin=0, vmax=255)
-    axes[1].axis("off")
-    plt.show()
+    ea = EvolutionaryAlgorithm(image, pop_size=args.population, ind_size=args.individual)
+
+    fitnesses, individuals = ea.run(generations=args.generations, verbose=not args.quiet)
+
+    if not args.quiet:
+        solution = individuals[np.argmax(fitnesses)]
+
+        approximation = np.zeros(image.shape, dtype="uint8")
+        ea.compute_image(approximation, solution, fill_color=image.mean())
+
+        _, axes = plt.subplots(1, 2)
+        axes[0].set_title("Best Approximation")
+        axes[0].imshow(approximation, cmap="gray", vmin=0, vmax=255)
+        axes[0].axis("off")
+        axes[1].set_title("Target Image")
+        axes[1].imshow(image, cmap="gray", vmin=0, vmax=255)
+        axes[1].axis("off")
+        plt.show()
 
 
 if __name__ == "__main__":
-    main()
+    main(parse_args())
