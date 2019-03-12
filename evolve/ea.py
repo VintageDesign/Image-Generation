@@ -111,6 +111,9 @@ class EvolutionaryAlgorithm:
         """Perturb the radius of the given circle."""
         dr = np.random.normal(scale=scale)
         # TODO: Cap the radius at an upper bound?
+
+        if circle["radius"] == 0 and dr < 0:
+            dr = -dr
         circle["radius"] = circle["radius"] + dr
 
     def perturb_color(self, circle, scale):
