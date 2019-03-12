@@ -1,8 +1,8 @@
 import numpy as np
 
 # Use uint16_t's for the centers, because we won't be working that *that* large of images.
-CircleCenterDtype = np.dtype([("x", "uint16"), ("y", "uint16")])
-CircleDtype = np.dtype([("radius", "uint16"), ("color", "uint8"), ("center", CircleCenterDtype)])
+CircleCenterDtype = np.dtype([("x", "float32"), ("y", "float32")])
+CircleDtype = np.dtype([("radius", "float32"), ("color", "float32"), ("center", CircleCenterDtype)])
 
 
 class EvolutionaryAlgorithm:
@@ -16,7 +16,7 @@ class EvolutionaryAlgorithm:
         :param pop_size: The number of individuals in the population.
         :param ind_size: The number of circles composing an individual.
         """
-        self.target = image
+        self.target = image.astype("float32")
         self.height, self.width = image.shape
         self.pop_size = pop_size
         self.ind_size = ind_size
@@ -32,7 +32,7 @@ class EvolutionaryAlgorithm:
 
         # TODO: If we ever attempt to perform parallel computation, each process will need its own
         # image represented by a single individual.
-        self.approx = np.zeros(image.shape, dtype="uint8")
+        self.approx = np.zeros(image.shape, dtype="float32")
 
     def init_pop(self):
         """Randomly initialize the population."""
@@ -54,11 +54,11 @@ class EvolutionaryAlgorithm:
         :param circle: The circle to initialize.
         :type circle: A single CircleDtype object.
         """
-        circle["color"] = np.random.randint(0, 256, dtype="uint8")
+        circle["color"] = np.random.randint(0, 256)
         # TODO: What should the bounds on the circle radii be?
-        circle["radius"] = np.random.randint(5, max(self.height, self.width) / 8, dtype="uint16")
-        circle["center"]["x"] = np.random.randint(0, self.width, dtype="uint16")
-        circle["center"]["y"] = np.random.randint(0, self.height, dtype="uint16")
+        circle["radius"] = np.random.randint(5, max(self.height, self.width) / 8)
+        circle["center"]["x"] = np.random.randint(0, self.width)
+        circle["center"]["y"] = np.random.randint(0, self.height)
 
     @staticmethod
     def fitness(image1, image2):
@@ -67,7 +67,7 @@ class EvolutionaryAlgorithm:
         height, width = image1.shape
 
         # Potential overflow issue if the images are uints
-        return np.sum(np.abs(image1 - image2.astype(float))) / (height * width)
+        return np.sum(np.abs(image1 - image2)) / (height * width)
 
     # TODO: 99% Of the EA runtime is spent in this function. Make it better.
     @staticmethod
@@ -120,21 +120,21 @@ class EvolutionaryAlgorithm:
 
     def perturb_radius(self, circle, scale):
         """Perturb the radius of the given circle."""
-        dr = np.random.normal(scale=scale)
-        # TODO: Cap the radius at an upper bound?
+        dr = int(np.random.normal(scale=scale))
+        # if circle["radius"] + dr < 2:
+        #     dr = -dr
 
-        if circle["radius"] == 0 and dr < 0:
-            dr = -dr
-        circle["radius"] = circle["radius"] + dr
+        circle["radius"] += dr
 
     def perturb_color(self, circle, scale):
         """Perturb the color of the given circle."""
-        dc = np.random.normal(scale=scale)
+        dc = int(np.random.normal(scale=scale))
         circle["color"] += dc
 
     def perturb_center(self, circle, scale):
         """Perturb the center of the given circle."""
-        dx, dy = np.random.normal(scale=scale, size=2)
+        dx, dy = np.random.normal(scale=scale, size=2).astype(int)
+        # TODO: Use min/max rather than mod.
         circle["center"]["x"] = (circle["center"]["x"] + dx) % self.width
         circle["center"]["y"] = (circle["center"]["y"] + dy) % self.height
 
@@ -189,8 +189,7 @@ class EvolutionaryAlgorithm:
         individuals = np.zeros((generations, self.ind_size), dtype=CircleDtype)
         for gen in range(generations):
             # self.reproduce()
-            scale = 6
-            self.mutate(scale)
+            self.mutate(scale=6)
             # TODO: This is 95+% of the runtime of the run() function call.
             # And compute_image is 95+% of this call.
             self.evaluate(population="general")

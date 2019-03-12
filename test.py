@@ -34,7 +34,7 @@ def main(args):
         solution = individuals[np.argmin(fitnesses)]
         print(solution)
 
-        approximation = np.zeros(image.shape, dtype="uint8")
+        approximation = np.zeros(image.shape, dtype="float32")
         ea.compute_image(approximation, solution, 255)
 
         _, axes = plt.subplots(1, 3)
@@ -45,7 +45,7 @@ def main(args):
         axes[1].imshow(image, cmap="gray", vmin=0, vmax=255)
         axes[1].axis("off")
         axes[2].set_title("Diff")
-        axes[2].imshow(image - approximation.astype(float), cmap="gray")
+        axes[2].imshow(image - approximation, cmap="gray", vmin=0, vmax=255)
         axes[2].axis("off")
         plt.show()
 
