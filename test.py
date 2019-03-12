@@ -45,7 +45,7 @@ def main(args):
         axes[1].imshow(image, cmap="gray", vmin=0, vmax=255)
         axes[1].axis("off")
         axes[2].set_title("Diff")
-        axes[2].imshow(image - approximation.astype(float), cmap="gray", vmin=0, vmax=255)
+        axes[2].imshow(image - approximation.astype(float), cmap="gray")
         axes[2].axis("off")
         plt.show()
 
