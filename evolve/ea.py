@@ -120,34 +120,39 @@ class EvolutionaryAlgorithm:
 
     def perturb_radius(self, circle, scale):
         """Perturb the radius of the given circle."""
-        dr = int(np.random.normal(scale=scale))
-        # if circle["radius"] + dr < 2:
-        #     dr = -dr
-
-        circle["radius"] += dr
+        dr = np.random.normal(scale=scale)
+        circle["radius"] = max(dr * circle["radius"] + circle["radius"], 1)
 
     def perturb_color(self, circle, scale):
         """Perturb the color of the given circle."""
-        dc = int(np.random.normal(scale=scale))
-        circle["color"] += dc
+        dc = np.random.normal(scale=scale)
+        circle["color"] = min(dc * circle["color"] + circle["color"], 255)
 
     def perturb_center(self, circle, scale):
         """Perturb the center of the given circle."""
-        dx, dy = np.random.normal(scale=scale, size=2).astype(int)
-        # TODO: Use min/max rather than mod.
-        circle["center"]["x"] = (circle["center"]["x"] + dx) % self.width
-        circle["center"]["y"] = (circle["center"]["y"] + dy) % self.height
+        dx, dy = np.random.normal(scale=scale, size=2)
+        circle["center"]["x"] = max(
+            min(dx * circle["center"]["x"] + circle["center"]["x"], self.width), 0
+        )
+        circle["center"]["y"] = max(
+            min(dy * circle["center"]["y"] + circle["center"]["y"], self.height), 0
+        )
 
     def mutate_individual(self, individual, scale):
         """Mutate the given individual in place."""
         for circle in individual:
-            choice = np.random.randint(0, 3)
-            if choice == 0:
-                self.perturb_radius(circle, scale)
-            elif choice == 1:
-                self.perturb_color(circle, scale)
-            elif choice == 2:
-                self.perturb_center(circle, scale)
+            # choice = np.random.randint(0, 3)
+            # if choice == 0:
+            #     self.perturb_radius(circle, scale)
+            # elif choice == 1:
+            #     self.perturb_color(circle, scale)
+            # elif choice == 2:
+            #     self.perturb_center(circle, scale)
+
+            # I think we need to perturb all three so that we explore more of the fitness landscape.
+            self.perturb_radius(circle, scale)
+            self.perturb_color(circle, scale)
+            self.perturb_center(circle, scale)
 
     def mutate(self, scale):
         """Mutate each individual in the population."""
@@ -189,7 +194,7 @@ class EvolutionaryAlgorithm:
         individuals = np.zeros((generations, self.ind_size), dtype=CircleDtype)
         for gen in range(generations):
             # self.reproduce()
-            self.mutate(scale=6)
+            self.mutate(scale=1.0)
             # TODO: This is 95+% of the runtime of the run() function call.
             # And compute_image is 95+% of this call.
             self.evaluate(population="general")
