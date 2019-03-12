@@ -110,3 +110,38 @@ Mon Mar 11 21:09:22 2019    float32.txt
 * Find ways to be innovative
 * Try more complicated images...
 * Attempt recombination
+
+## Strategy
+
+Here's what I want to try after several hours of talking with Kyle. This is a simplified version of
+his algorithm.
+
+```python
+def gen_individual(approximation):
+    """Generate a decent approximation of the target image."""
+    individual = []
+    # An individual is a single circle. I want to make this as small as possible, maybe even one.
+    population = init_pop()
+    for _ in range(generations):
+        mutate(population)
+        # Might be tough with just a single circle.
+        recombine(population)
+        select(population)
+    approximation = add_to_image(approximation, get_best(population))
+    individual.append(get_best(population))
+
+    return individual
+```
+
+This does a pretty good job of approximating the image, and quite quickly. I want to use this algorithm
+to bootstrap an evolutionary algorithm.
+
+```python
+# Trivially parallelisable.
+population = [gen_individual() for _ in range(pop_size)]
+for _ in range(generations):
+    # This would be fine-tuning the already decent approximations found above.
+    mutate(population)
+    recombine(population)
+    select(population)
+```
