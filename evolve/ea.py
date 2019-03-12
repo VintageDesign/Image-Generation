@@ -80,7 +80,8 @@ class EvolutionaryAlgorithm:
 
             x, y = np.ogrid[-cy : height - cy, -cx : width - cx]
             mask = x ** 2 + y ** 2 <= r ** 2
-            image[mask] = (image[mask] + circle["color"]) / 2
+            # TODO: This is not the right way to blend the colors.
+            image[mask] += circle["color"]
 
     def update_fitnesses(self, population, fitnesses):
         """Update the fitnesses for the given population."""
