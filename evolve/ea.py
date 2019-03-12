@@ -1,7 +1,11 @@
 import numpy as np
 
 from evolve import fitness
-from evolve.shapes import NumpyCircleArray
+
+
+# Use uint16_t's for the centers, because we won't be working that *that* large of images.
+CircleCenterDtype = np.dtype([("x", "uint16"), ("y", "uint16")])
+CircleDtype = np.dtype([("radius", "uint16"), ("color", "uint8"), ("center", CircleCenterDtype)])
 
 
 class EvolutionaryAlgorithm:
@@ -20,7 +24,7 @@ class EvolutionaryAlgorithm:
         self.pop_size = pop_size
         self.ind_size = ind_size
 
-        self.population = np.zeros((pop_size, ind_size), dtype=NumpyCircleArray.CircleDtype)
+        self.population = np.zeros((pop_size, ind_size), dtype=CircleDtype)
         self.fitnesses = np.zeros(len(self.population))
 
         self.mutations = np.zeros_like(self.population)
@@ -42,7 +46,7 @@ class EvolutionaryAlgorithm:
         """Randomly initialize the given individual.
 
         :param individual: The individual to initialize.
-        :type individual: An array of NumpyCircleArray.CircleDtype objects.
+        :type individual: An array of CircleDtype objects.
         """
         for circle in individual:
             self.init_circle(circle)
@@ -51,7 +55,7 @@ class EvolutionaryAlgorithm:
         """Randomly initialize the given circle.
 
         :param circle: The circle to initialize.
-        :type circle: A single NumpyCircleArray.CircleDtype object.
+        :type circle: A single CircleDtype object.
         """
         circle["color"] = np.random.randint(0, 256, dtype="uint8")
         # TODO: What should the bounds on the circle radii be?
@@ -67,7 +71,7 @@ class EvolutionaryAlgorithm:
         :param image: The preallocated image to fill
         :type image: a (height, width) numpy array of uint8s
         :param individual: The individual representing the image
-        :type individual: An array of NumpyCircleArray.CircleDtype objects
+        :type individual: An array of CircleDtype objects
         :param fill_color: The image background color.
         :type fill_color: A uint8 between 0 and 255.
         """
@@ -176,7 +180,7 @@ class EvolutionaryAlgorithm:
         self.evaluate(population="general")
 
         fitnesses = np.zeros(generations)
-        individuals = np.zeros((generations, self.ind_size), dtype=NumpyCircleArray.CircleDtype)
+        individuals = np.zeros((generations, self.ind_size), dtype=CircleDtype)
         for gen in range(generations):
             # self.reproduce()
             scale = 6
