@@ -175,8 +175,8 @@ class EvolutionaryAlgorithm:
         individuals = np.zeros((generations, self.ind_size), dtype=NumpyCircleArray.CircleDtype)
         for gen in range(generations):
             # self.reproduce()
-
-            self.mutate(scale=5)
+            scale = 6
+            self.mutate(scale)
             # TODO: This is 95+% of the runtime of the run() function call.
             # And compute_image is 95+% of this call.
             self.evaluate(population="general")
@@ -187,7 +187,7 @@ class EvolutionaryAlgorithm:
             best = np.argmin(self.fitnesses)
             if verbose:
                 print("best fitness:", self.fitnesses[best])
-                print("best color:", self.population[best]["color"])
+                print("best:", self.population[best])
             fitnesses[gen] = self.fitnesses[best]
             individuals[gen] = self.population[best]
 
