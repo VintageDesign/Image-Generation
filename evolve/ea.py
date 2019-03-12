@@ -1,8 +1,5 @@
 import numpy as np
 
-from evolve import fitness
-
-
 # Use uint16_t's for the centers, because we won't be working that *that* large of images.
 CircleCenterDtype = np.dtype([("x", "uint16"), ("y", "uint16")])
 CircleDtype = np.dtype([("radius", "uint16"), ("color", "uint8"), ("center", CircleCenterDtype)])
@@ -63,6 +60,15 @@ class EvolutionaryAlgorithm:
         circle["center"]["x"] = np.random.randint(0, self.width, dtype="uint16")
         circle["center"]["y"] = np.random.randint(0, self.height, dtype="uint16")
 
+    @staticmethod
+    def fitness(image1, image2):
+        """Determine how close two images are."""
+        assert image1.shape == image2.shape
+        height, width = image1.shape
+
+        # Potential overflow issue if the images are uints
+        return np.sum(np.abs(image1 - image2.astype(float))) / (height * width)
+
     # TODO: 99% Of the EA runtime is spent in this function. Make it better.
     @staticmethod
     def compute_image(image, individual, fill_color=255):
@@ -93,7 +99,7 @@ class EvolutionaryAlgorithm:
         for i, individual in enumerate(population):
             # TODO: Fill with the mean color of the target image?
             self.compute_image(self.approx, individual)
-            fitnesses[i] = fitness(self.approx, self.target)
+            fitnesses[i] = self.fitness(self.approx, self.target)
 
     def evaluate(self, population="general"):
         """Update the population fitnesses.
