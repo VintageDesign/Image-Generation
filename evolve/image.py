@@ -7,4 +7,4 @@ def fitness(image1, image2):
     height, width = image1.shape
 
     # Potential overflow issue if the images are uints
-    return np.sum(np.abs(image1 - image2)) / (height * width)
+    return np.sum(np.abs(image1 - image2.astype(float))) / (height * width)

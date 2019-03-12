@@ -31,7 +31,7 @@ class EvolutionaryAlgorithm:
 
         # TODO: If we ever attempt to perform parallel computation, each process will need its own
         # image represented by a single individual.
-        self.approx = np.zeros(image.shape, dtype="int16")
+        self.approx = np.zeros(image.shape, dtype="uint8")
 
     def init_pop(self):
         """Randomly initialize the population."""
@@ -55,7 +55,7 @@ class EvolutionaryAlgorithm:
         """
         circle["color"] = np.random.randint(0, 256, dtype="uint8")
         # TODO: What should the bounds on the circle radii be?
-        circle["radius"] = np.random.randint(5, max(self.height, self.width), dtype="uint16")
+        circle["radius"] = np.random.randint(5, max(self.height, self.width) / 8, dtype="uint16")
         circle["center"]["x"] = np.random.randint(0, self.width, dtype="uint16")
         circle["center"]["y"] = np.random.randint(0, self.height, dtype="uint16")
 
@@ -107,29 +107,24 @@ class EvolutionaryAlgorithm:
             self.update_fitnesses(self.mutations, self.mutation_fitnesses)
             self.update_fitnesses(self.children, self.children_fitnesses)
 
-    def perturb_radius(self, circle, scale=5):
+    def perturb_radius(self, circle, scale):
         """Perturb the radius of the given circle."""
         dr = np.random.normal(scale=scale)
-        # Avoid overflows.
-        if dr < 0 and abs(dr) > circle["radius"]:
-            dr = -dr
+        # TODO: Cap the radius at an upper bound?
         circle["radius"] = circle["radius"] + dr
 
-    def perturb_color(self, circle, scale=5):
+    def perturb_color(self, circle, scale):
         """Perturb the color of the given circle."""
         dc = np.random.normal(scale=scale)
-        # Avoid overflows.
-        if dc < 0 and -dc > circle["color"]:
-            dc = -dc
         circle["color"] += dc
 
-    def perturb_center(self, circle, scale=5):
+    def perturb_center(self, circle, scale):
         """Perturb the center of the given circle."""
         dx, dy = np.random.normal(scale=scale, size=2)
         circle["center"]["x"] = (circle["center"]["x"] + dx) % self.width
         circle["center"]["y"] = (circle["center"]["y"] + dy) % self.height
 
-    def mutate_individual(self, individual, scale=3):
+    def mutate_individual(self, individual, scale):
         """Mutate the given individual in place."""
         for circle in individual:
             choice = np.random.randint(0, 3)
@@ -140,11 +135,11 @@ class EvolutionaryAlgorithm:
             elif choice == 2:
                 self.perturb_center(circle, scale)
 
-    def mutate(self):
+    def mutate(self, scale):
         """Mutate each individual in the population."""
         np.copyto(self.mutations, self.population)
         for mutant in self.mutations:
-            self.mutate_individual(mutant)
+            self.mutate_individual(mutant, scale)
 
     def reproduce(self):
         """Reproduce the individuals in the population."""
@@ -165,7 +160,7 @@ class EvolutionaryAlgorithm:
         self.fitnesses = fit[: self.pop_size]
 
     # TODO: Display the current best individual as the EA progresses.
-    def run(self, generations=100, verbose=False):
+    def run(self, generations, verbose=False):
         """Run the EA.
 
         :param generations: The number of generations to run the EA for
@@ -181,7 +176,7 @@ class EvolutionaryAlgorithm:
         for gen in range(generations):
             # self.reproduce()
 
-            self.mutate()
+            self.mutate(scale=5)
             # TODO: This is 95+% of the runtime of the run() function call.
             # And compute_image is 95+% of this call.
             self.evaluate(population="general")
@@ -192,6 +187,7 @@ class EvolutionaryAlgorithm:
             best = np.argmin(self.fitnesses)
             if verbose:
                 print("best fitness:", self.fitnesses[best])
+                print("best color:", self.population[best]["color"])
             fitnesses[gen] = self.fitnesses[best]
             individuals[gen] = self.population[best]
 
