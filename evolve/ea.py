@@ -1,3 +1,6 @@
+import itertools
+from multiprocessing import Pool
+
 import numpy as np
 
 # Use uint16_t's for the centers, because we won't be working that *that* large of images.
@@ -33,6 +36,7 @@ class EvolutionaryAlgorithm:
         # TODO: If we ever attempt to perform parallel computation, each process will need its own
         # image represented by a single individual.
         self.approx = np.zeros(image.shape, dtype="float32")
+        self.pool = Pool()
 
     def init_pop(self):
         """Randomly initialize the population."""
@@ -93,13 +97,20 @@ class EvolutionaryAlgorithm:
             # TODO: This is not the right way to blend the colors.
             image[mask] += circle["color"]
 
+    @staticmethod
+    def _process_fitness(individual, local_storage):
+        """Compute the fitness of the given individual."""
+        approximation, target = local_storage
+        EvolutionaryAlgorithm.compute_image(approximation, individual)
+        return EvolutionaryAlgorithm.fitness(approximation, target)
+
     def update_fitnesses(self, population, fitnesses):
         """Update the fitnesses for the given population."""
-        # TODO: This is a good candidate for parallelism.
-        for i, individual in enumerate(population):
-            # TODO: Fill with the mean color of the target image?
-            self.compute_image(self.approx, individual)
-            fitnesses[i] = self.fitness(self.approx, self.target)
+        results = self.pool.starmap(
+            self._process_fitness,
+            zip(population, itertools.repeat((self.approx, self.target), times=len(population))),
+        )
+        np.copyto(fitnesses, results)
 
     def evaluate(self, population="general"):
         """Update the population fitnesses.
