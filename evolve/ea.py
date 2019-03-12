@@ -91,10 +91,9 @@ class EvolutionaryAlgorithm:
             # NOTE: The type of circle["center"]["x"] is a numpy uint16. However, for whatever
             # reason, a numpy uint16 does *not* play nicely with np.ogrid unless it's the value 0.
             cx, cy, r = int(circle["center"]["x"]), int(circle["center"]["y"]), circle["radius"]
-
+            # TODO: This is very expensive. Find a way to make it better.
             x, y = np.ogrid[-cy : height - cy, -cx : width - cx]
             mask = x ** 2 + y ** 2 <= r ** 2
-            # TODO: This is not the right way to blend the colors.
             image[mask] += circle["color"]
 
     @staticmethod
@@ -108,6 +107,8 @@ class EvolutionaryAlgorithm:
         """Update the fitnesses for the given population."""
         results = self.pool.starmap(
             self._process_fitness,
+            # Using a process makes a copy of your current process, so we have a per-process copy
+            # of an image array and the target array.
             zip(population, itertools.repeat((self.approx, self.target), times=len(population))),
         )
         np.copyto(fitnesses, results)
@@ -137,7 +138,7 @@ class EvolutionaryAlgorithm:
     def perturb_color(self, circle, scale):
         """Perturb the color of the given circle."""
         dc = np.random.normal(scale=scale)
-        circle["color"] = min(dc * circle["color"] + circle["color"], 255)
+        circle["color"] = max(min(dc * circle["color"] + circle["color"], 255), -255)
 
     def perturb_center(self, circle, scale):
         """Perturb the center of the given circle."""

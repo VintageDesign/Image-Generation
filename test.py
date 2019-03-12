@@ -39,7 +39,7 @@ def main(args):
 
         _, axes = plt.subplots(1, 3)
         axes[0].set_title("Best Approximation")
-        axes[0].imshow(approximation, cmap="gray", vmin=0, vmax=255)
+        axes[0].imshow(approximation, cmap="gray", vmin=-255, vmax=255)
         axes[0].axis("off")
         axes[1].set_title("Target Image")
         axes[1].imshow(image, cmap="gray", vmin=0, vmax=255)
