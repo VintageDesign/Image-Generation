@@ -5,7 +5,7 @@ import imageio
 import matplotlib.pyplot as plt
 import numpy as np
 
-from evolve import BootstrapAlgorithm, EvolutionaryAlgorithm
+from evolve import BootstrapAlgorithm, CombinedAlgorithm, EvolutionaryAlgorithm
 
 
 def parse_args():
@@ -61,7 +61,11 @@ def main(args):
         solution, approximation = ba.run()
         print("best solution:", solution)
     elif args.combined:
-        raise NotImplementedError
+        ca = CombinedAlgorithm(target, args.circles, args.population, args.generations)
+        individuals, fitnesses = ca.run()
+        solution = individuals[np.argmin(fitnesses)]
+        print("best solution:", solution)
+        ca.compute_image(approximation, solution, fill_color=255)
 
     _, axes = plt.subplots(1, 3)
     axes[0].set_title("Best Approximation")
