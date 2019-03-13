@@ -38,7 +38,7 @@ def parse_args():
 
 
 def main(args):
-    target = imageio.imread(args.image)
+    target = imageio.imread(args.image).astype("float32")
     approximation = np.zeros_like(target, dtype="float32")
 
     if args.ea:
