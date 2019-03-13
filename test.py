@@ -5,7 +5,7 @@ import imageio
 import matplotlib.pyplot as plt
 import numpy as np
 
-from evolve import EvolutionaryAlgorithm
+from evolve import BootstrapAlgorithm, EvolutionaryAlgorithm
 
 
 def parse_args():
@@ -13,7 +13,13 @@ def parse_args():
 
     parser.add_argument("--quiet", action="store_true", default=False, help="Quiet all output.")
     parser.add_argument("--population", "-p", type=int, default=10, help="The population size.")
-    parser.add_argument("--individual", "-i", type=int, default=20, help="The individual size.")
+    parser.add_argument(
+        "--circles",
+        "-c",
+        type=int,
+        default=20,
+        help="The number of circles used to approximate the image.",
+    )
     parser.add_argument(
         "--generations", "-g", type=int, default=100, help="The number of generations."
     )
@@ -42,13 +48,15 @@ def main(args):
     approximation = np.zeros_like(target, dtype="float32")
 
     if args.ea:
-        ea = EvolutionaryAlgorithm(target, pop_size=args.population, ind_size=args.individual)
+        ea = EvolutionaryAlgorithm(target, pop_size=args.population, ind_size=args.circles)
         fitnesses, individuals = ea.run(generations=args.generations, verbose=not args.quiet)
         solution = individuals[np.argmin(fitnesses)]
         print("best solution:", solution)
         ea.compute_image(approximation, solution, 255)
     elif args.bootstrap:
-        raise NotImplementedError
+        ba = BootstrapAlgorithm(target, args.circles, args.population, args.generations)
+        solution, approximation = ba.run()
+        print("best solution:", solution)
     elif args.combined:
         raise NotImplementedError
 
