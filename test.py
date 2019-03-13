@@ -34,7 +34,10 @@ def parse_args():
         help="Use the bootstrap method to build a quick approximation.",
     )
     group.add_argument(
-        "--ea", action="store_true", default=True, help="The default traditional, slow EA approach."
+        "--ea",
+        action="store_true",
+        default=False,
+        help="The default traditional, slow EA approach.",
     )
     group.add_argument(
         "--combined", action="store_true", default=False, help="A combined approach."
