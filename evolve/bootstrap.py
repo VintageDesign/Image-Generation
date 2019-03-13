@@ -129,7 +129,6 @@ class BootstrapAlgorithm:
     def run(self):
         """Run the bootstrap algorithm."""
         for i in range(self.circles):
-            print("circle:", i)
             self.init_pop()
             for generation in range(self.generations):
                 self.mutate(scale=1.0)
