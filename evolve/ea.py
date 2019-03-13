@@ -3,9 +3,7 @@ from multiprocessing import Pool
 
 import numpy as np
 
-# Use uint16_t's for the centers, because we won't be working that *that* large of images.
-CircleCenterDtype = np.dtype([("x", "float32"), ("y", "float32")])
-CircleDtype = np.dtype([("radius", "float32"), ("color", "float32"), ("center", CircleCenterDtype)])
+from .utils import CircleDtype
 
 
 class EvolutionaryAlgorithm:
