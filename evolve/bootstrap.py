@@ -41,8 +41,7 @@ class BootstrapAlgorithm:
 
         # The image approximated with the best circle from each iteration.
         self.approximation = np.zeros_like(target, dtype="float32")
-        # We need a destructible copy of the image to test each circle in each generation.
-        self.temp_image = np.zeros_like(target, dtype="float32")
+        self.approximation.fill(255)
         # The individual this algorithm is building.
         self.individual = np.zeros(circles, dtype=CircleDtype)
 
@@ -63,35 +62,81 @@ class BootstrapAlgorithm:
         circle["center"]["x"] = np.random.randint(0, self.width)
         circle["center"]["y"] = np.random.randint(0, self.height)
 
-    def mutate(self):
+    def perturb_radius(self, circle, scale):
+        """Perturb the radius of the given circle."""
+        dr = np.random.normal(scale=scale)
+        circle["radius"] = max(dr * circle["radius"] + circle["radius"], 1)
+
+    def perturb_color(self, circle, scale):
+        """Perturb the color of the given circle."""
+        dc = np.random.normal(scale=scale)
+        circle["color"] = max(min(dc * circle["color"] + circle["color"], 255), -255)
+
+    def perturb_center(self, circle, scale):
+        """Perturb the center of the given circle."""
+        dx, dy = np.random.normal(scale=scale, size=2)
+        circle["center"]["x"] = max(
+            min(dx * circle["center"]["x"] + circle["center"]["x"], self.width), 0
+        )
+        circle["center"]["y"] = max(
+            min(dy * circle["center"]["y"] + circle["center"]["y"], self.height), 0
+        )
+
+    def mutate(self, scale):
         """Perform random mutations in the population."""
-        raise NotImplementedError
+        np.copyto(self.mutations, self.population)
+        for mutant in self.mutations:
+            self.perturb_radius(mutant, scale)
+            self.perturb_color(mutant, scale)
+            self.perturb_center(mutant, scale)
 
     def evaluate(self):
         """Evaluate the fitnesses of the population."""
-        raise NotImplementedError
+        for i, (general, mutation) in enumerate(zip(self.population, self.mutations)):
+            cx, cy, r = int(general["center"]["x"]), int(general["center"]["y"]), general["radius"]
+            x, y = np.ogrid[-cy : self.height - cy, -cx : self.width - cx]
+            mask = x ** 2 + y ** 2 <= r ** 2
+            approx = self.approximation + mask * general["color"]
+
+            self.general_fitnesses[i] = fitness(self.target, approx)
+
+            cx, cy, r = (
+                int(mutation["center"]["x"]),
+                int(mutation["center"]["y"]),
+                mutation["radius"],
+            )
+            x, y = np.ogrid[-cy : self.height - cy, -cx : self.width - cx]
+            mask = x ** 2 + y ** 2 <= r ** 2
+            approx = self.approximation + mask * mutation["color"]
+            self.mutation_fitnesses[i] = fitness(self.target, approx)
 
     def select(self):
         """Perform selection on the combined general and mutation populations."""
-        raise NotImplementedError
+        joint = np.concatenate((self.population, self.mutations))
+        fitnesses = np.concatenate((self.general_fitnesses, self.mutation_fitnesses))
+        indices = np.argsort(fitnesses)
+        self.population = joint[indices][: self.pop_size]
+        self.general_fitnesses = fitnesses[indices][: self.pop_size]
 
-    def update_approximation(self, circle):
-        """Add the given circle to the approximation image."""
-        raise NotImplementedError
+    def add_to_image(self, image, circle):
+        """Add the given circle to the given image."""
+        cx, cy, r = int(circle["center"]["x"]), int(circle["center"]["y"]), circle["radius"]
+        x, y = np.ogrid[-cy : self.height - cy, -cx : self.width - cx]
+        image[x ** 2 + y ** 2 <= r ** 2] += circle["color"]
 
     def run(self):
         """Run the bootstrap algorithm."""
         for i in range(self.circles):
+            print("circle:", i)
             self.init_pop()
             for generation in range(self.generations):
-                # self.mutate()
+                self.mutate(scale=1.0)
                 # Update the fitnesses so that selection is possible.
-                # self.evaluate()
-                # self.select()
-                pass
+                self.evaluate()
+                self.select()
 
             best = self.population[np.argmin(self.general_fitnesses)]
             self.individual[i] = best
-            # self.update_approximation(best)
+            self.add_to_image(self.approximation, best)
 
         return self.individual, self.approximation
