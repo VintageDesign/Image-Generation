@@ -1,6 +1,6 @@
 import numpy as np
 
-from .utils import CircleDtype
+from .utils import CircleDtype, fitness
 
 
 class BootstrapAlgorithm:
@@ -33,7 +33,11 @@ class BootstrapAlgorithm:
         self.generations = generations
 
         self.population = np.zeros(pop_size, dtype=CircleDtype)
-        self.mutations = np.zeros_like(self.population, dtype=CircleDtype)
+        # The fitnesses of the general population.
+        self.general_fitnesses = np.zeros(pop_size)
+        self.mutations = np.zeros(pop_size, dtype=CircleDtype)
+        # The fitnesses of the mutations.
+        self.mutation_fitnesses = np.zeros(pop_size)
 
         # The image approximated with the best circle from each iteration.
         self.approximation = np.zeros_like(target, dtype="float32")
@@ -42,9 +46,52 @@ class BootstrapAlgorithm:
         # The individual this algorithm is building.
         self.individual = np.zeros(circles, dtype=CircleDtype)
 
+    def init_pop(self):
+        """Randomly initialize the population of circles."""
+        for circle in self.population:
+            self.init_circle(circle)
+
+    def init_circle(self, circle):
+        """Randomly initialize the given circle.
+
+        :param circle: The circle to initialize.
+        :type circle: A single CircleDtype object.
+        """
+        circle["color"] = np.random.randint(0, 256)
+        # TODO: What should the bounds on the circle radii be?
+        circle["radius"] = np.random.randint(10, max(self.height, self.width) / 4)
+        circle["center"]["x"] = np.random.randint(0, self.width)
+        circle["center"]["y"] = np.random.randint(0, self.height)
+
+    def mutate(self):
+        """Perform random mutations in the population."""
+        raise NotImplementedError
+
+    def evaluate(self):
+        """Evaluate the fitnesses of the population."""
+        raise NotImplementedError
+
+    def select(self):
+        """Perform selection on the combined general and mutation populations."""
+        raise NotImplementedError
+
+    def update_approximation(self, circle):
+        """Add the given circle to the approximation image."""
+        raise NotImplementedError
+
     def run(self):
         """Run the bootstrap algorithm."""
-        for circle in self.individual:
-            pass
+        for i in range(self.circles):
+            self.init_pop()
+            for generation in range(self.generations):
+                # self.mutate()
+                # Update the fitnesses so that selection is possible.
+                # self.evaluate()
+                # self.select()
+                pass
+
+            best = self.population[np.argmin(self.general_fitnesses)]
+            self.individual[i] = best
+            # self.update_approximation(best)
 
         return self.individual, self.approximation
