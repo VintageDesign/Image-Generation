@@ -3,7 +3,7 @@ from multiprocessing import Pool
 
 import numpy as np
 
-from .utils import CircleDtype
+from .utils import CircleDtype, fitness
 
 
 class EvolutionaryAlgorithm:
@@ -62,15 +62,6 @@ class EvolutionaryAlgorithm:
         circle["center"]["x"] = np.random.randint(0, self.width)
         circle["center"]["y"] = np.random.randint(0, self.height)
 
-    @staticmethod
-    def fitness(image1, image2):
-        """Determine how close two images are."""
-        assert image1.shape == image2.shape
-        height, width = image1.shape
-
-        # Potential overflow issue if the images are uints
-        return np.sum(np.abs(image1 - image2)) / (height * width)
-
     # TODO: 99% Of the EA runtime is spent in this function. Make it better.
     @staticmethod
     def compute_image(image, individual, fill_color=255):
@@ -99,7 +90,7 @@ class EvolutionaryAlgorithm:
         """Compute the fitness of the given individual."""
         approximation, target = local_storage
         EvolutionaryAlgorithm.compute_image(approximation, individual)
-        return EvolutionaryAlgorithm.fitness(approximation, target)
+        return fitness(approximation, target)
 
     def update_fitnesses(self, population, fitnesses):
         """Update the fitnesses for the given population."""
