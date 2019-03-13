@@ -39,12 +39,7 @@ class CombinedAlgorithm:
         self.generations = generations
 
         self.population = np.zeros((pop_size, circles), dtype=CircleDtype)
-        self.children = np.zeros((pop_size, circles), dtype=CircleDtype)
-
         self.fitnesses = np.zeros(pop_size)
-        self.child_fitnesses = np.zeros(pop_size)
-        # Leave the population unsorted, but keep track of the indices that would sort by fitness
-        self.sorted_indices = np.arange(pop_size)
 
         self.approximation = np.zeros_like(target, dtype="float32")
 
@@ -67,7 +62,7 @@ class CombinedAlgorithm:
         """
         # Use a different seed for each process to avoid results exactly the same as each other.
         seeds = np.random.randint(low=np.iinfo(np.uint32).max, size=self.pop_size)
-        print("initializing population... 0.00%", end="", flush=True)
+        print("initializing population... 0%", end="", flush=True)
         for i, result in enumerate(
             self.proc_pool.imap_unordered(
                 self.worker,
@@ -79,7 +74,7 @@ class CombinedAlgorithm:
                 ),
             )
         ):
-            print(f"\rinitializing population... {i / self.pop_size:.2f}%", end="")
+            print(f"\rinitializing population... {100 * i // self.pop_size}%", end="")
             individual, _ = result
             self.population[i] = individual
         print(" done.")
@@ -124,7 +119,7 @@ class CombinedAlgorithm:
             self.compute_image(self.approximation, individual, fill_color=255)
             self.fitnesses[i] = fitness(self.approximation, self.target)
 
-        self.sorted_indices = np.argsort(self.fitnesses)
+        self.population = self.population[np.argsort(self.fitnesses)]
 
     def perturb_radius(self, circle, scale):
         """Perturb the radius of the given circle."""
@@ -153,19 +148,28 @@ class CombinedAlgorithm:
             self.perturb_color(circle, scale)
             self.perturb_center(circle, scale)
 
-    def mutate(self, scale):
+    def mutate(self, population, scale):
         """Mutate each individual in the population."""
-        for mutant in self.population:
+        for mutant in population:
             self.mutate_individual(mutant, scale)
 
     def breed(self):
-        """Recombine the population."""
-        # There is one less child than parents, so pick the best parent.
-        self.children[-1] = self.population[np.argmin(self.fitnesses)]
+        """Recombine and mutate the population."""
+        children = np.zeros((self.pop_size - 1, self.circles), dtype=CircleDtype)
+
+        # Pairwise breed and mutate everyone
         for i, (mom, dad) in enumerate(pairwise(self.population)):
             child = self.crossover(mom, dad)
-            self.children[i] = child
-        np.copyto(self.population, self.children)
+            children[i] = child
+
+        mutants = children.copy()
+
+        self.mutate(mutants, scale=0.1)
+
+        elite, offspring = (int(0.1 * self.pop_size), int(0.5 * self.pop_size))
+
+        self.population[elite:offspring] = children[: offspring - elite]
+        self.population[offspring:] = mutants[: len(self.population[offspring:])]
 
     def run(self):
         """Run the combined evolutionary algorithm.
@@ -182,7 +186,6 @@ class CombinedAlgorithm:
         for gen in range(self.generations):
             # Handle recombination, mutation, and selection.
             self.breed()
-            self.mutate(0.1)
             self.evaluate()
 
             best = np.argmin(self.fitnesses)
