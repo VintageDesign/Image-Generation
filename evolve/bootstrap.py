@@ -56,7 +56,7 @@ class BootstrapAlgorithm:
         :param circle: The circle to initialize.
         :type circle: A single CircleDtype object.
         """
-        circle["color"] = np.random.randint(0, 256)
+        circle["color"] = np.random.randint(-255, 256)
         # TODO: What should the bounds on the circle radii be?
         circle["radius"] = np.random.randint(10, max(self.height, self.width) / 4)
         circle["center"]["x"] = np.random.randint(0, self.width)
