@@ -53,8 +53,8 @@ class CombinedAlgorithm:
     @staticmethod
     def worker(args):
         """Find an approximation in a separate process."""
-        target, circles, pop_size, generations = args
-        ba = BootstrapAlgorithm(target, circles, pop_size, generations)
+        seed, (target, circles, pop_size, generations) = args
+        ba = BootstrapAlgorithm(target, circles, pop_size, generations, seed)
         return ba.run()
 
     def init_pop(self, pop_size, generations):
@@ -65,33 +65,47 @@ class CombinedAlgorithm:
         :param pop_size: The bootstrap population size. (Number of circles)
         :param generations: The bootstrap generation length. (Number of iterations)
         """
+        # Use a different seed for each process to avoid results exactly the same as each other.
+        seeds = np.random.randint(low=np.iinfo(np.uint32).max, size=self.pop_size)
         print("initializing population... 0.00%", end="", flush=True)
         for i, result in enumerate(
             self.proc_pool.imap_unordered(
                 self.worker,
-                itertools.repeat(
-                    (self.target, self.circles, pop_size, generations), times=self.pop_size // 2
+                zip(
+                    seeds,
+                    itertools.repeat(
+                        (self.target, self.circles, pop_size, generations), times=self.pop_size
+                    ),
                 ),
             )
         ):
-            print(f"\rinitializing population... {i / (self.pop_size // 2):.2f}%", end="")
+            print(f"\rinitializing population... {i / self.pop_size:.2f}%", end="")
             individual, _ = result
             self.population[i] = individual
-
-        for i, (mom, dad) in enumerate(pairwise(self.population[: self.pop_size // 2])):
-            children = self.crossover(mom, dad)
-            self.population[self.pop_size // 2 + i] = children[np.random.randint(2)]
-
         print(" done.")
+
+    @staticmethod
+    def average(circle1, circle2):
+        """Average the two given circles."""
+        result = np.zeros_like(circle1, dtype=CircleDtype)
+        result["color"] = (circle1["color"] + circle2["color"]) / 2
+        result["radius"] = (circle1["radius"] + circle2["radius"]) / 2
+        result["center"]["x"] = (circle1["center"]["x"] + circle2["center"]["x"]) / 2
+        result["center"]["y"] = (circle1["center"]["y"] + circle2["center"]["y"]) / 2
+
+        return result
 
     def crossover(self, mom, dad):
         """Breed two individuals via the traditional crossover.
 
-        Take the first half of mom and splice with dad, and vice versa.
+        Take the first half of mom and splice with dad.
         """
-        kid1 = np.concatenate((mom[: self.circles // 2], dad[self.circles // 2 :]))
-        kid2 = np.concatenate((mom[self.circles // 2 :], dad[: self.circles // 2]))
-        return kid1, kid2
+        # return np.concatenate((mom[: self.circles // 2], dad[self.circles // 2 :]))
+        child = np.zeros_like(mom, dtype=CircleDtype)
+        for i in range(self.circles):
+            child[i] = self.average(mom[i], dad[i])
+
+        return child
 
     @staticmethod
     def compute_image(image, individual, fill_color):
@@ -112,15 +126,14 @@ class CombinedAlgorithm:
 
         self.sorted_indices = np.argsort(self.fitnesses)
 
-    def recombine(self):
+    def breed(self):
         """Recombine the population."""
+        # There is one less child than parents, so pick the best parent.
+        self.children[-1] = self.population[np.argmin(self.fitnesses)]
         for i, (mom, dad) in enumerate(pairwise(self.population)):
-            children = self.crossover(mom, dad)
-            self.children[i] = children[np.random.randint(2)]
-        # Keep the best third of the population, and replace the rest with 2/3 of the new children.
-        self.population[self.sorted_indices][self.pop_size // 3 :] = self.children[
-            self.pop_size // 3 :
-        ]
+            child = self.crossover(mom, dad)
+            self.children[i] = child
+        np.copyto(self.population, self.children)
 
     def run(self):
         """Run the combined evolutionary algorithm.
@@ -128,14 +141,15 @@ class CombinedAlgorithm:
         This function returns a tuple (individuals, fitnesses) of the best individuals and their
         fitness from each generation.
         """
-        self.init_pop(pop_size=10, generations=100)
+        self.init_pop(pop_size=20, generations=20)
 
         # The best individual of each generation.
         best_individuals = np.zeros((self.generations, self.circles), dtype=CircleDtype)
         best_fitnesses = np.zeros(self.generations)
 
         for gen in range(self.generations):
-            self.recombine()
+            # Handle recombination, mutation, and selection.
+            self.breed()
             # TODO: Determine if the initial population is good enough that we don't need mutations.
             self.evaluate()
 

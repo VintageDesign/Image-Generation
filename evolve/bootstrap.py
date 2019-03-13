@@ -19,7 +19,7 @@ class BootstrapAlgorithm:
     the overall approximation this algorithm outputs as its own individuals to breed and select.
     """
 
-    def __init__(self, target, circles, pop_size, generations):
+    def __init__(self, target, circles, pop_size, generations, seed=None):
         """Initialize the bootstrap algorithm.
 
         :param target: The desired target image.
@@ -46,6 +46,8 @@ class BootstrapAlgorithm:
         self.approximation.fill(255)
         # The individual this algorithm is building.
         self.individual = np.zeros(circles, dtype=CircleDtype)
+
+        np.random.seed(seed)
 
     def init_pop(self):
         """Randomly initialize the population of circles."""
