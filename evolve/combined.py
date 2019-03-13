@@ -126,6 +126,38 @@ class CombinedAlgorithm:
 
         self.sorted_indices = np.argsort(self.fitnesses)
 
+    def perturb_radius(self, circle, scale):
+        """Perturb the radius of the given circle."""
+        dr = np.random.normal(scale=scale)
+        circle["radius"] = max(dr * circle["radius"] + circle["radius"], 1)
+
+    def perturb_color(self, circle, scale):
+        """Perturb the color of the given circle."""
+        dc = np.random.normal(scale=scale)
+        circle["color"] = max(min(dc * circle["color"] + circle["color"], 255), -255)
+
+    def perturb_center(self, circle, scale):
+        """Perturb the center of the given circle."""
+        dx, dy = np.random.normal(scale=scale, size=2)
+        circle["center"]["x"] = max(
+            min(dx * circle["center"]["x"] + circle["center"]["x"], self.width), 0
+        )
+        circle["center"]["y"] = max(
+            min(dy * circle["center"]["y"] + circle["center"]["y"], self.height), 0
+        )
+
+    def mutate_individual(self, individual, scale):
+        """Mutate the given individual in place."""
+        for circle in individual:
+            self.perturb_radius(circle, scale)
+            self.perturb_color(circle, scale)
+            self.perturb_center(circle, scale)
+
+    def mutate(self, scale):
+        """Mutate each individual in the population."""
+        for mutant in self.population:
+            self.mutate_individual(mutant, scale)
+
     def breed(self):
         """Recombine the population."""
         # There is one less child than parents, so pick the best parent.
@@ -150,7 +182,7 @@ class CombinedAlgorithm:
         for gen in range(self.generations):
             # Handle recombination, mutation, and selection.
             self.breed()
-            # TODO: Determine if the initial population is good enough that we don't need mutations.
+            self.mutate(0.1)
             self.evaluate()
 
             best = np.argmin(self.fitnesses)
