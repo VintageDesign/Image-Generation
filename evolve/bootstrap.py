@@ -10,6 +10,8 @@ class BootstrapAlgorithm:
     of random circles. Then for some number of generations, mutate, recombine, and select that
     population.
 
+    Each individual is a single circle.
+
     At the end of the generational cycle, add the best circle from the population to the current
     approximation and move on to the next desired circle.
 
