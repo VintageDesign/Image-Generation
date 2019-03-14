@@ -158,15 +158,15 @@ class CombinedAlgorithm:
         children = np.zeros((self.pop_size - 1, self.circles), dtype=CircleDtype)
 
         # Pairwise breed and mutate everyone
-        for i, (mom, dad) in enumerate(pairwise(self.population)):
+        for i, (mom, dad) in enumerate(pairwise(np.random.permutation(self.population))):
             child = self.crossover(mom, dad)
             children[i] = child
 
         mutants = children.copy()
 
-        self.mutate(mutants, scale=0.1)
+        self.mutate(mutants, scale=0.2)
 
-        elite, offspring = (int(0.1 * self.pop_size), int(0.5 * self.pop_size))
+        elite, offspring = (int(0.1 * self.pop_size), int(0.6 * self.pop_size))
 
         self.population[elite:offspring] = children[: offspring - elite]
         self.population[offspring:] = mutants[: len(self.population[offspring:])]
@@ -177,7 +177,8 @@ class CombinedAlgorithm:
         This function returns a tuple (individuals, fitnesses) of the best individuals and their
         fitness from each generation.
         """
-        self.init_pop(pop_size=20, generations=20)
+        self.init_pop(pop_size=10, generations=20)
+        self.evaluate()
 
         # The best individual of each generation.
         best_individuals = np.zeros((self.generations, self.circles), dtype=CircleDtype)
