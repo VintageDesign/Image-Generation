@@ -56,6 +56,14 @@ def main(args):
         solution = individuals[np.argmin(fitnesses)]
         print("best solution:", solution)
         ea.compute_image(approximation, solution, 255)
+
+        plt.title("The best individual's fitness over time.")
+        plt.plot(fitnesses)
+        if args.output:
+            plt.savefig(args.output + ".fitness.png")
+        if not args.quiet:
+            plt.show()
+
     elif args.bootstrap:
         ba = BootstrapAlgorithm(target, args.circles, args.population, args.generations)
         solution, approximation = ba.run()
@@ -66,6 +74,13 @@ def main(args):
         solution = individuals[np.argmin(fitnesses)]
         print("best solution:", solution)
         ca.compute_image(approximation, solution, fill_color=255)
+
+        plt.title("The best individual's fitness over time.")
+        plt.plot(fitnesses)
+        if args.output:
+            plt.savefig(args.output + ".fitness.png")
+        if not args.quiet:
+            plt.show()
 
     _, axes = plt.subplots(1, 3)
     axes[0].set_title("Best Approximation")
