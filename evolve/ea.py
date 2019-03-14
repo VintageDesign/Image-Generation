@@ -205,8 +205,10 @@ class EvolutionaryAlgorithm:
 
             best = np.argmin(self.fitnesses)
             if verbose:
-                print("best fitness:", self.fitnesses[best])
-                print("best:", self.population[best])
+                print(
+                    f"\rgeneration: {gen} best fitness: {self.fitnesses.min()} worst fitness: {self.fitnesses.max()}",
+                    end="",
+                )
             fitnesses[gen] = self.fitnesses[best]
             individuals[gen] = self.population[best]
 
