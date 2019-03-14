@@ -61,8 +61,7 @@ class BootstrapAlgorithm:
         :type circle: A single CircleDtype object.
         """
         circle["color"] = np.random.randint(-255, 256)
-        # TODO: What should the bounds on the circle radii be?
-        circle["radius"] = np.random.randint(10, max(self.height, self.width) / 4)
+        circle["radius"] = np.random.randint(20, max(self.height, self.width))
         circle["center"]["x"] = np.random.randint(0, self.width)
         circle["center"]["y"] = np.random.randint(0, self.height)
 
@@ -133,11 +132,15 @@ class BootstrapAlgorithm:
         for i in range(self.circles):
             self.init_pop()
             for generation in range(self.generations):
-                self.mutate(scale=1.0)
+                self.mutate(scale=0.5)
                 # Update the fitnesses so that selection is possible.
                 self.evaluate()
                 self.select()
 
+            print(
+                f"\rcircle: {i} best fitness: {self.general_fitnesses.min()} worst fitness: {self.general_fitnesses.max()}",
+                end="",
+            )
             best = self.population[np.argmin(self.general_fitnesses)]
             self.individual[i] = best
             self.add_to_image(self.approximation, best)
