@@ -677,7 +677,12 @@ image as shown in \autoref{fig:nothing}.
 
 Moving on to more complicated images, we saw that the algorithm would evolve the circles that
 contribute the most to the image, but would minimize the rest. \autoref{fig:partial} shows some
-examples of this. Note the tiny circles present in the white background.
+examples of this.\footnote{Between runs we changed how the difference is computed and displayed.
+    This is why one of them has a gray background and the other has a black background. Matplotlib
+    by default uses a linear map between the least element and the greatest element of an array to
+    determine what values correspond to what colors. If you take the difference between two images,
+    you're likely to find fairly negative values and fairly positive values.} Note the tiny circles
+present in the white background.
 
 \begin{figure}[H]
     \centering
@@ -883,8 +888,50 @@ effectively blur the image. In reality, the opposite happened.
         generations}\label{fig:composite-32}
 \end{figure}
 
-\section{Conclusion}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{output/average64_c400p10g50l64.png}
+    \caption{64 composite layers with population of 10, 400 circles, and 50
+        generations}\label{fig:composite-64-10}
+\end{figure}
 
-\todoinline{Conclude something}
+The larger number of total circles in the end composite image produced the best approximation.
+
+\section{Conclusion}
+So to summarize our results, we struggled. The things we expected would work quite nicely failed to
+yield reasonable results, and the things we expected to need more improvement worked quite well by
+themselves.
+
+There are many approaches we considered, and would like to have attempted, but could not due to
+time constraints caused by work and other classes. We would have liked to have spent more time
+tuning simulated annealing, because we still feel that it has the potential to yield excellent
+results.
+
+We also believe that it should be possible to use a simulated annealing-like approach to build an
+approximation circle-by-circle. Our current method always takes the best individual circle at the
+end of each generation. It may prove beneficial to take the best, or also accept a lesser fit
+circle with some decreasing degree of randomness.
+
+Our attempts at combining the two approaches --- building an approximation circle-by-circle and
+evolving a population of such individuals --- did not prove useful, but we believe that increasing
+the diversity of the initial population and improving the recombination operator and selection
+method would have better results. We identified multiple ways to add diversity. First, we could use
+a base individual (or individuals) and add \textit{more} circles to each, and evolve only those
+additional circles. Second, we could increase the diversity by running the bootstrap initialization
+for fewer generations, and with more randomness in the mutations. Third, we could only seed a few
+members of the initial population, and leave the rest as randomly initialized.
+
+Lastly, we had the idea of using a density based clustering algorithm like DBSCAN to identify
+hotspots in the difference between the target image and the approximation. We could then use the
+hotspots to identify which elements of the genome of a given individual contribute positively, and
+which elements contribute negatively to the overall fitness of the individual. We are unsure at
+this time if the additional computational requirements of repeated clustering would be worth it.
+Especially as the clustering algorithms are typically fairly expensive.
+
+Our final recommended approach to solving this problem is to use a computationally cheap method to
+produce a largish number of individual approximations, and then to layer those approximations on
+top of each other. Because there is no data dependency, the approximations can be produced in
+parallel, and because there is diversity in the approximations, the composite result has greater
+detail than each individual approximation.
 
 \end{document}
