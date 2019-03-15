@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 import itertools
 from multiprocessing import Pool
 
@@ -5,7 +6,7 @@ import imageio
 import matplotlib.pyplot as plt
 import numpy as np
 
-from evolve import BootstrapAlgorithm, CircleDtype
+from evolve import BootstrapAlgorithm
 
 
 def worker(args):
@@ -15,30 +16,32 @@ def worker(args):
     return ba.run()
 
 
-def average(image, circles, pop_size, generations):
-    """Use the bootstrap method to initialize a population of individuals.
-        Performs the initialization in parallel using however many cores are available.
-        :param pop_size: The bootstrap population size. (Number of circles)
-        :param generations: The bootstrap generation length. (Number of iterations)
+def average(filename, circles, layers, pop_size, generations):
+    """Average multiple runs of the BootstrapAlgorithm to form a composite image.
+
+    :param filename: The image filename to approximate.
+    :param circles: The number of circles to use in each layer.
+    :param layers: The number of layers to use.
+    :param pop_size: The population size to use.
+    :param generations: The number of generations to use.
     """
-    target = imageio.imread(image).astype("float32")
+    target = imageio.imread(filename).astype("float32")
     approximate = np.zeros_like(target, dtype="float32")
-    proc_pool = Pool()
-    population = []
+
     # Use a different seed for each process to avoid results exactly the same as each other.
-    seeds = np.random.randint(low=np.iinfo(np.uint32).max, size=pop_size)
+    seeds = np.random.randint(low=np.iinfo(np.uint32).max, size=layers)
     with Pool() as pool:
         results = pool.map(
             worker,
-            zip(seeds, itertools.repeat((target, circles, pop_size, generations), times=pop_size)),
+            zip(seeds, itertools.repeat((target, circles, pop_size, generations), times=layers)),
         )
 
-    for _, ind in results:
-        approximate = approximate + ind
+    for _, image in results:
+        approximate = approximate + image
 
+    # Need to normalize because we're summing all of the images together.
     approximate = approximate / len(results)
 
-    print(" done.")
     _, axes = plt.subplots(1, 3)
     axes[0].set_title("Best Approximation")
     axes[0].imshow(approximate, cmap="gray", vmin=0, vmax=255)
@@ -52,4 +55,5 @@ def average(image, circles, pop_size, generations):
     plt.show()
 
 
-average("images/mona_lisa.png", 600, 128, 50)
+if __name__ == "__main__":
+    average("images/mona_lisa.png", circles=600, layers=128, pop_size=128, generations=50)
