@@ -1,18 +1,21 @@
 import itertools
-import imageio
 from multiprocessing import Pool
 
-import numpy as np
+import imageio
 import matplotlib.pyplot as plt
-from evolve import BootstrapAlgorithm
-from evolve import CircleDtype
+import numpy as np
+
+from evolve import BootstrapAlgorithm, CircleDtype
+
 
 def worker(args):
     """Find an approximation in a separate process."""
     seed, (target, circles, pop_size, generations) = args
     ba = BootstrapAlgorithm(target, circles, pop_size, generations, seed)
     return ba.run()
-def average(image, circles,  pop_size, generations):
+
+
+def average(image, circles, pop_size, generations):
     """Use the bootstrap method to initialize a population of individuals.
         Performs the initialization in parallel using however many cores are available.
         :param pop_size: The bootstrap population size. (Number of circles)
@@ -25,17 +28,15 @@ def average(image, circles,  pop_size, generations):
     # Use a different seed for each process to avoid results exactly the same as each other.
     seeds = np.random.randint(low=np.iinfo(np.uint32).max, size=pop_size)
     with Pool() as pool:
-        results = pool.map(worker, zip(seeds, itertools.repeat((target, circles, pop_size, generations), times=pop_size)))
+        results = pool.map(
+            worker,
+            zip(seeds, itertools.repeat((target, circles, pop_size, generations), times=pop_size)),
+        )
 
     for _, ind in results:
         approximate = approximate + ind
 
-
     approximate = approximate / len(results)
-
-
-
-
 
     print(" done.")
     _, axes = plt.subplots(1, 3)
@@ -51,4 +52,4 @@ def average(image, circles,  pop_size, generations):
     plt.show()
 
 
-average('images/mona_lisa.png',600, 128, 50)
+average("images/mona_lisa.png", 600, 128, 50)
