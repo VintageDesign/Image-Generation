@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import argparse
 import itertools
 from multiprocessing import Pool
 
@@ -55,5 +56,19 @@ def average(filename, circles, layers, pop_size, generations):
     plt.show()
 
 
+def parse_args():
+    parser = argparse.ArgumentParser(
+        description="Form a composite image using the Bootstrap method"
+    )
+    parser.add_argument("image", help="The image to approximate")
+    parser.add_argument("--layers", "-l", help="The number of layers to use")
+    parser.add_argument("--circles", "-c", help="The number of circles to use")
+    parser.add_argument("--population", "-p", help="The population size to use")
+    parser.add_argument("--generations", "-g", help="The number of generations to use")
+
+    return parser.parse_args()
+
+
 if __name__ == "__main__":
-    average("images/mona_lisa.png", circles=600, layers=128, pop_size=128, generations=50)
+    args = parse_args()
+    average(args.image, args.circles, args.layers, args.population, args.generations)
