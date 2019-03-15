@@ -137,10 +137,6 @@ class BootstrapAlgorithm:
                 self.evaluate()
                 self.select()
 
-            print(
-                f"\rcircle: {i} best fitness: {self.general_fitnesses.min()} worst fitness: {self.general_fitnesses.max()}",
-                end="",
-            )
             best = self.population[np.argmin(self.general_fitnesses)]
             self.individual[i] = best
             self.add_to_image(self.approximation, best)
