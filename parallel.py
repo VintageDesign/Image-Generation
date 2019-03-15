@@ -61,10 +61,10 @@ def parse_args():
         description="Form a composite image using the Bootstrap method"
     )
     parser.add_argument("image", help="The image to approximate")
-    parser.add_argument("--layers", "-l",type=int, help="The number of layers to use")
-    parser.add_argument("--circles", "-c", type=int,help="The number of circles to use")
-    parser.add_argument("--population", "-p", type=int,help="The population size to use")
-    parser.add_argument("--generations", "-g", type=int,help="The number of generations to use")
+    parser.add_argument("--layers", "-l", type=int, help="The number of layers to use")
+    parser.add_argument("--circles", "-c", type=int, help="The number of circles to use")
+    parser.add_argument("--population", "-p", type=int, help="The population size to use")
+    parser.add_argument("--generations", "-g", type=int, help="The number of generations to use")
 
     return parser.parse_args()
 
