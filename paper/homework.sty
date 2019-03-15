@@ -48,7 +48,7 @@
 }
 
 \usetikzlibrary{arrows, backgrounds, matrix, positioning, shapes}
-\pgfplotsset{compat=1.16}
+\pgfplotsset{compat=1.15}
 \numberwithin{equation}{section}
 % Sets the width of the margin TODO notes
 \setlength{\marginparwidth}{0.84in}
@@ -110,9 +110,9 @@
 %     Problem\quad\thesection\newline}[\vspace{0.01ex}{\titlerule[1.5pt]}]
 
 % Make autorefs to sections say "Problem x"
-\AtBeginDocument{%
-\renewcommand{\sectionautorefname}{Problem}
-}
+% \AtBeginDocument{%
+% \renewcommand{\sectionautorefname}{Problem}
+% }
 
 % Use \ceil*{} or \floor*{}
 \DeclarePairedDelimiter{\ceil}{\lceil}{\rceil}
