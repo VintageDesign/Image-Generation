@@ -51,4 +51,4 @@ def average(image, circles,  pop_size, generations):
     plt.show()
 
 
-average('images/mona_lisa.png',400, 32, 50)
+average('images/mona_lisa.png',600, 128, 50)
