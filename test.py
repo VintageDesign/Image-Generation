@@ -2,6 +2,7 @@
 import argparse
 
 import imageio
+from PIL import Image
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -47,8 +48,9 @@ def parse_args():
 
 
 def main(args):
-    target = imageio.imread(args.image).astype("float32")
+    target = np.asarray(Image.open(args.image).convert('L')).astype("float32")
     approximation = np.zeros_like(target, dtype="float32")
+
 
     if args.ea:
         ea = EvolutionaryAlgorithm(target, pop_size=args.population, ind_size=args.circles)
